@@ -144,6 +144,14 @@ body {
   padding: 1em;
 }
 
+.plantaTarjeta select {
+    margin-top: 1em;
+    border: solid 0.1em #9be09b;
+    border-radius: 0.5em;
+    height: 2em;
+    width: 20em;
+}
+
 .plantaTarjeta input {
     margin-top: 1em;
     border: solid 0.1em #9be09b;
