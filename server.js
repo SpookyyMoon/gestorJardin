@@ -7,7 +7,6 @@ const mysql = require("mysql2/promise");
 // Middleware
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
-
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
@@ -20,44 +19,21 @@ app.listen(PORT, () => {
 });
 
 //Gestor de la planta
-app.post("/crearPlanta", (req, res) => {
-  var nombrePlanta = req.body.nombrePlanta;
-  var frecuenciaRiego = req.body.frecuenciaRiego;
-  var tipoPlanta = req.body.tipoPlanta;
+app.post("/crearPlanta", async (req, res) => {
+    var nombrePlanta = req.body.nombrePlanta;
+    var frecuenciaRiego = req.body.frecuenciaRiego;
+    var tipoPlanta = req.body.tipoPlanta;
 
-  console.log("Datos recibidos: ", {
-    nombrePlanta,
-    frecuenciaRiego,
-    tipoPlanta,
-  });
+    console.log("Datos recibidos: ", {
+      nombrePlanta,
+      frecuenciaRiego,
+      tipoPlanta,
+    });
 
-  Planta.crearPlanta(nombrePlanta, tipoPlanta, frecuenciaRiego);
+    await Planta.crearPlanta(nombrePlanta, tipoPlanta, frecuenciaRiego);
 });
 
-let conexion;
-let host = "localhost";
-let usuario = "root";
-let contrasena = "";
-
-async function generarConexion() {
-  conexion = await mysql.createConnection({
-    host: host,
-    user: usuario,
-    password: contrasena,
-    database: "gestorJardin",
-  });
-}
-
-async function conexionSQL() {
-  try {
-    await generarConexion();
-    conexion.connect();
-    console.log("\nConexión a MySQL establecida correctamente");
-  } catch (error) {
-    console.error("\nError al conectar a MySQL:", error);
-  }
-}
-
+//Clase planta
 class Planta {
   constructor(nombre, tipo, frecuenciaRiego, ultimoRiego) {
     this.nombre = nombre;
@@ -74,18 +50,36 @@ class Planta {
     return;
   }
 
-  static insertarPlantaSQL(planta) {
-    generarConexion();
-    let consulta =
-      "INSERT INTO planta VALUES (`${planta.nombre}`, `${planta.tipo}`, planta.frecuenciaRiego, planta.ultimoRiego)";
-    conexion.execute(consulta);
-  }
-
-  static crearPlanta(nombre, tipo, frecuenciaRiego) {
-    let planta = new Planta(nombre, tipo, frecuenciaRiego, null);
-    console.log(
-      `\nSe ha añadido la planta: ${planta.nombre} de tipo: ${planta.tipo}\n`
+  //Inserta el objeto planta en la base de datos (Genera la conexión a la base de datos)
+  static async insertarPlantaSQL(planta) {
+  let conexion;
+  try {
+    conexion = await mysql.createConnection({
+      host: "",
+      user: "",
+      password: "",
+      database: "gestorJardin",
+    });
+    const [resultado] = await conexion.execute(
+      "INSERT INTO plantas (nombre, tipo, frecuenciaRiego) VALUES (?, ?, ?)",
+      [planta.nombre, planta.tipo, planta.frecuenciaRiego]
     );
-    this.insertarPlantaSQL(planta);
+    return resultado;
+  } finally {
+    if (conexion) await conexion.end();
+  }
+}
+
+  //Crea el objeto planta a traves de los datos recibidos por el formulario
+  static async crearPlanta(nombre, tipo, frecuenciaRiego) {
+    try {
+      let planta = new Planta(nombre, tipo, frecuenciaRiego, null);
+      console.log(
+        `\nSe ha añadido la planta: ${planta.nombre} de tipo: ${planta.tipo}\n`
+      );
+      await this.insertarPlantaSQL(planta);
+    } catch (error) {
+      console.error("Ha habido un error al crear la planta!", error.message);
+    }
   }
 }
