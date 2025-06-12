@@ -8,9 +8,8 @@ $(document).ready(function () {
                                   <select name="tipoPlanta">
                                     <option value="1">Alocasia</option>
                                     <option value="2">Costilla de Adán</option>
-                                    <option value="3">Aloe Vera</option>
-                                    <option value="4">Lirio</option>
-                                    <option value="5">Lengua de suegra</option>
+                                    <option value="3">Lirio</option>
+                                    <option value="4">Lengua de suegra</option>
                                   </select>
                             </p>
                             <p>Frencuencia de riego de la planta: 
@@ -33,15 +32,36 @@ $(document).ready(function () {
       const datos = await response.json();
 
       if (datos.success) {
+        $("#contenido").empty();
+        $("#contenido").append(plantaCrear);
         datos.plantas.forEach((planta) => {
+          let imagenPlanta;
+          switch (planta.tipo) {
+            case "1":
+              planta.tipo = "Alocasia";
+              imagenPlanta = "./images/1.png";
+              break;
+            case 2:
+              planta.tipo = "Costilla de Adán";
+              imagenPlanta = "./images/2.png";
+              break;
+            case 3:
+              planta.tipo = "Lirio";
+              imagenPlanta = "./images/3.png";
+              break;
+            case 4:
+              planta.tipo = "Lengua de suegra";
+              imagenPlanta = "./images/4.png";
+              break;
+          }
           $("#contenido").prepend(`<div class="plantaTarjeta">
                     <div class="plantaBotonera">
                     </div>
                     <div class="plantaContenido">
-                      <img class="imgPlanta">
+                      <img class="imgPlanta" src=${imagenPlanta}>
                       <p class="plantaNombre">${planta.nombre}</p>
                       <p class="plantaTipo"> ${planta.tipo}</p>
-                      <p class="plantaFrecuenciaRiego">Regar cada: ${planta.frecuenciaRiego}</p>
+                      <p class="plantaFrecuenciaRiego">Regar cada: ${planta.frecuenciaRiego} días</p>
                       <p class="plantaUltimoRiego"></p>
                     </div>
                   </div>`);

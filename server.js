@@ -31,6 +31,7 @@ app.post("/crearPlanta", async (req, res) => {
   });
 
   await Planta.crearPlanta(nombrePlanta, tipoPlanta, frecuenciaRiego);
+  res.redirect("/");
 });
 
 // Envia las plantas desde express hasta el front
