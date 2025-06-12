@@ -18,22 +18,32 @@ app.listen(PORT, () => {
   console.log(`Servidor iniciado en: http://localhost:${PORT}`);
 });
 
-//Gestor de la planta
+// Gestor de la planta
 app.post("/crearPlanta", async (req, res) => {
-    var nombrePlanta = req.body.nombrePlanta;
-    var frecuenciaRiego = req.body.frecuenciaRiego;
-    var tipoPlanta = req.body.tipoPlanta;
+  var nombrePlanta = req.body.nombrePlanta;
+  var frecuenciaRiego = req.body.frecuenciaRiego;
+  var tipoPlanta = req.body.tipoPlanta;
 
-    console.log("Datos recibidos: ", {
-      nombrePlanta,
-      frecuenciaRiego,
-      tipoPlanta,
-    });
+  console.log("Datos recibidos: ", {
+    nombrePlanta,
+    frecuenciaRiego,
+    tipoPlanta,
+  });
 
-    await Planta.crearPlanta(nombrePlanta, tipoPlanta, frecuenciaRiego);
+  await Planta.crearPlanta(nombrePlanta, tipoPlanta, frecuenciaRiego);
 });
 
-//Clase planta
+// Envia las plantas desde express hasta el front
+app.get("/obtenerPlantas", async (req, res) => {
+  try {
+    const plantas = await Planta.obtenerPlantas();
+    res.status(200).json({ success: true, plantas });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Clase planta
 class Planta {
   constructor(nombre, tipo, frecuenciaRiego, ultimoRiego) {
     this.nombre = nombre;
@@ -50,27 +60,44 @@ class Planta {
     return;
   }
 
-  //Inserta el objeto planta en la base de datos (Genera la conexión a la base de datos)
+  // Inserta el objeto planta en la base de datos (Genera la conexión a la base de datos)
   static async insertarPlantaSQL(planta) {
-  let conexion;
-  try {
-    conexion = await mysql.createConnection({
-      host: "",
-      user: "",
-      password: "",
-      database: "gestorJardin",
-    });
-    const [resultado] = await conexion.execute(
-      "INSERT INTO plantas (nombre, tipo, frecuenciaRiego) VALUES (?, ?, ?)",
-      [planta.nombre, planta.tipo, planta.frecuenciaRiego]
-    );
-    return resultado;
-  } finally {
-    if (conexion) await conexion.end();
+    let conexion;
+    try {
+      conexion = await mysql.createConnection({
+        host: "",
+        user: "",
+        password: "",
+        database: "",
+      });
+      const [resultado] = await conexion.execute(
+        "INSERT INTO plantas (nombre, tipo, frecuenciaRiego) VALUES (?, ?, ?)",
+        [planta.nombre, planta.tipo, planta.frecuenciaRiego]
+      );
+      return resultado;
+    } finally {
+      if (conexion) await conexion.end(); // Cierra la conexión SQL
+    }
   }
-}
 
-  //Crea el objeto planta a traves de los datos recibidos por el formulario
+  // Carga todas las plantas desde la base de datos
+  static async obtenerPlantas() {
+    let conexion;
+    try {
+      conexion = await mysql.createConnection({
+        host: "",
+        user: "",
+        password: "",
+        database: "",
+      });
+      const [plantas] = await conexion.execute("SELECT * FROM plantas");
+      return plantas;
+    } finally {
+      if (conexion) await conexion.end(); // Cierra la conexión SQL
+    }
+  }
+
+  // Crea el objeto planta a traves de los datos recibidos por el formulario
   static async crearPlanta(nombre, tipo, frecuenciaRiego) {
     try {
       let planta = new Planta(nombre, tipo, frecuenciaRiego, null);

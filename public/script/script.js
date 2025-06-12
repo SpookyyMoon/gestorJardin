@@ -20,22 +20,39 @@ $(document).ready(function () {
                           </form>
                         </div>`;
 
-  const planta = `<div>
+  $(".plantaAdd").click(function () {
+    $("#contenido").empty();
+    $("#contenido").append(plantaCrear);
+    cargarPlantas();
+  });
+
+  // Función para cargar y mostrar plantas
+  async function cargarPlantas() {
+    try {
+      const response = await fetch("/obtenerPlantas");
+      const datos = await response.json();
+
+      if (datos.success) {
+        datos.plantas.forEach((planta) => {
+          $("#contenido").prepend(`<div class="plantaTarjeta">
                     <div class="plantaBotonera">
                     </div>
                     <div class="plantaContenido">
                       <img class="imgPlanta">
-                      <p class="plantaNombre"></p>
-                      <p class="plantaTipo"></p>
-                      <p class="plantaFrecuenciaRiego"></p>
+                      <p class="plantaNombre">${planta.nombre}</p>
+                      <p class="plantaTipo"> ${planta.tipo}</p>
+                      <p class="plantaFrecuenciaRiego">Regar cada: ${planta.frecuenciaRiego}</p>
                       <p class="plantaUltimoRiego"></p>
                     </div>
-                  </div>`;
+                  </div>`);
+        });
+      }
+    } catch (error) {
+      console.error("¡No se han podido cargar las plantas!");
+    }
+  }
 
-  $(".plantaAdd").click(function () {
-    $("#contenido").empty();
-    $("#contenido").append(plantaCrear);
-  });
+  cargarPlantas();
 });
 
 //Plantas: Alocasia, Costilla de Adán, Aloe Vera, Lirio, Lengua de suegra
