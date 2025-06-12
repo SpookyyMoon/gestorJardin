@@ -3,6 +3,7 @@ const express = require("express");
 const path = require("path");
 const app = express();
 const mysql = require("mysql2/promise");
+const luxon = require("luxon");
 
 // Middleware
 app.use(express.static(path.join(__dirname, "public")));
@@ -36,29 +37,18 @@ app.post("/crearPlanta", async (req, res) => {
 
 // Envia las plantas desde express hasta el front
 app.get("/obtenerPlantas", async (req, res) => {
-  try {
-    const plantas = await Planta.obtenerPlantas();
-    res.status(200).json({ success: true, plantas });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
+  const plantas = await Planta.obtenerPlantas();
+  res.status(200).json({ success: true, plantas });
 });
 
 // Clase planta
 class Planta {
-  constructor(nombre, tipo, frecuenciaRiego, ultimoRiego) {
+  constructor(nombre, tipo, frecuenciaRiego, ultimoRiego, proximoRiego) {
     this.nombre = nombre;
     this.tipo = tipo;
     this.frecuenciaRiego = frecuenciaRiego;
     this.ultimoRiego = ultimoRiego;
-  }
-
-  static ultimoRiego(planta) {
-    return;
-  }
-
-  static necesitaRiego(planta) {
-    return;
+    this.proximoRiego = proximoRiego;
   }
 
   // Inserta el objeto planta en la base de datos (Genera la conexión a la base de datos)
@@ -66,10 +56,10 @@ class Planta {
     let conexion;
     try {
       conexion = await mysql.createConnection({
-        host: "",
-        user: "",
-        password: "",
-        database: "",
+        host: "localhost",
+        user: "root",
+        ,
+        database: "gestorJardin",
       });
       const [resultado] = await conexion.execute(
         "INSERT INTO plantas (nombre, tipo, frecuenciaRiego) VALUES (?, ?, ?)",
@@ -101,13 +91,65 @@ class Planta {
   // Crea el objeto planta a traves de los datos recibidos por el formulario
   static async crearPlanta(nombre, tipo, frecuenciaRiego) {
     try {
-      let planta = new Planta(nombre, tipo, frecuenciaRiego, null);
+      let planta = new Planta(nombre, tipo, frecuenciaRiego, null, null);
       console.log(
         `\nSe ha añadido la planta: ${planta.nombre} de tipo: ${planta.tipo}\n`
       );
       await this.insertarPlantaSQL(planta);
     } catch (error) {
       console.error("Ha habido un error al crear la planta!", error.message);
+    }
+  }
+
+  // Registra la última vez que se ha regado una planta
+  static async registrarRiego(plantaID, frecuenciaRiego) {
+    let conexion;
+    const ahora = luxon.now();
+    try {
+      conexion = await mysql.createConnection({
+        host: "",
+        user: "",
+        password: "",
+        database: "",
+      });
+      await conexion.execute(
+        "UPDATE plantas SET ultimoRiego = ? WHERE id = ?",
+        [ahora, plantaID]
+      );
+    } finally {
+      this.proximoRiego(ahora, frecuenciaRiego, plantaID);
+      if (conexion) {
+        await conexion.end();
+      }
+    }
+  }
+
+  // Registra el próximo riego necesario
+  static async proximoRiego(ultimoRiego, frecuenciaRiego, plantaID) {
+    let conexion;
+    if (!ultimoRiego) {
+      return true;
+    }
+
+    const ultimoRiegoDate = luxon.fromISO(ultimoRiego);
+    const ahora = luxon.now();
+
+    const diasDesdeUltimoRiego = ahora.diff(ultimoRiegoDate, "days").days;
+    const proximoRiego = diasDesdeUltimoRiego >= frecuenciaRiego;
+
+    try {
+      conexion = await mysql.createConnection({
+        host: "",
+        user: "",
+        password: "",
+        database: "",
+      });
+      await conexion.execute(
+        "UPDATE plantas SET proximoRiego = ? WHERE id = ?",
+        [proximoRiego, plantaID]
+      );
+    } finally {
+      if (conexion) await conexion.end();
     }
   }
 }

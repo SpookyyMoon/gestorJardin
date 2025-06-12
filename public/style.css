@@ -191,6 +191,12 @@ body {
   justify-content: space-around;
 }
 
+.plantaContenido p{
+  margin: 0em;
+  padding: 0em;
+}
+
+
 .imgPlanta {
   height: 10em;
   object-fit: contain;

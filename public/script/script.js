@@ -1,4 +1,5 @@
 $(document).ready(function () {
+  // Creador de plantas
   const plantaCrear = `<div class="plantaTarjeta">
                           <form method="post" action="/crearPlanta">
                             <p>Nombre de la planta: 
@@ -19,6 +20,7 @@ $(document).ready(function () {
                           </form>
                         </div>`;
 
+  // Acción de añadir planta
   $(".plantaAdd").click(function () {
     $("#contenido").empty();
     $("#contenido").append(plantaCrear);
@@ -41,18 +43,22 @@ $(document).ready(function () {
               planta.tipo = "Alocasia";
               imagenPlanta = "./images/1.png";
               break;
-            case 2:
+            case "2":
               planta.tipo = "Costilla de Adán";
               imagenPlanta = "./images/2.png";
               break;
-            case 3:
+            case "3":
               planta.tipo = "Lirio";
               imagenPlanta = "./images/3.png";
               break;
-            case 4:
+            case "4":
               planta.tipo = "Lengua de suegra";
               imagenPlanta = "./images/4.png";
               break;
+          }
+          if (planta.ultimoRiego == null) {
+            planta.ultimoRiego = "No registrado";
+            planta.proximoRiego = `Regar en ${planta.frecuenciaRiego} días`;
           }
           $("#contenido").prepend(`<div class="plantaTarjeta">
                     <div class="plantaBotonera">
@@ -62,7 +68,8 @@ $(document).ready(function () {
                       <p class="plantaNombre">${planta.nombre}</p>
                       <p class="plantaTipo"> ${planta.tipo}</p>
                       <p class="plantaFrecuenciaRiego">Regar cada: ${planta.frecuenciaRiego} días</p>
-                      <p class="plantaUltimoRiego"></p>
+                      <p class="plantaUltimoRiego">Último riego: ${planta.ultimoRiego}</p>
+                      <p class="proximoRiego">Próximo riego: ${planta.proximoRiego}</P>
                     </div>
                   </div>`);
         });

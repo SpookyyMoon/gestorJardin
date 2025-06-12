@@ -9,6 +9,7 @@ CREATE TABLE plantas (
 	nombre varchar(30) not null,
     tipo varchar(30) not null,
     frecuenciaRiego int not null,
-    ultimoRiego date);
+    ultimoRiego date,
+    proximoRiego date);
 
 ALTER TABLE plantas ADD PRIMARY KEY (id);
