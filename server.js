@@ -56,10 +56,10 @@ class Planta {
     let conexion;
     try {
       conexion = await mysql.createConnection({
-        host: "localhost",
-        user: "root",
-        ,
-        database: "gestorJardin",
+        host: "",
+        user: "",
+        password: "",
+        database: "",
       });
       const [resultado] = await conexion.execute(
         "INSERT INTO plantas (nombre, tipo, frecuenciaRiego) VALUES (?, ?, ?)",
