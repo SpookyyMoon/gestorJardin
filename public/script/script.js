@@ -20,12 +20,21 @@ $(document).ready(function () {
                           </form>
                         </div>`;
 
+  const planta = `<div>
+                    <div class="plantaBotonera">
+                    </div>
+                    <div class="plantaContenido">
+                      <img class="imgPlanta">
+                      <p class="plantaNombre"></p>
+                      <p class="plantaTipo"></p>
+                      <p class="plantaFrecuenciaRiego"></p>
+                      <p class="plantaUltimoRiego"></p>
+                    </div>
+                  </div>`;
+
   $(".plantaAdd").click(function () {
     $("#contenido").empty();
     $("#contenido").append(plantaCrear);
-  });
-
-  $(document).on("click", "button", function () {
   });
 });
 

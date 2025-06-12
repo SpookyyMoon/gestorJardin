@@ -1,3 +1,5 @@
+## Postgree sql (neon)
+
 # Creación de la BD
 DROP DATABASE IF EXISTS gestorJardin;
 CREATE DATABASE gestorJardin;

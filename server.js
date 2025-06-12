@@ -2,7 +2,7 @@
 const express = require("express");
 const path = require("path");
 const app = express();
-const mysql = require('mysql2/promise');
+const mysql = require("mysql2/promise");
 
 // Middleware
 app.use(express.static(path.join(__dirname, "public")));
@@ -35,8 +35,8 @@ app.post("/crearPlanta", (req, res) => {
 });
 
 let conexion;
-let host = "";
-let usuario = "";
+let host = "localhost";
+let usuario = "root";
 let contrasena = "";
 
 async function generarConexion() {
@@ -74,10 +74,18 @@ class Planta {
     return;
   }
 
+  static insertarPlantaSQL(planta) {
+    generarConexion();
+    let consulta =
+      "INSERT INTO planta VALUES (`${planta.nombre}`, `${planta.tipo}`, planta.frecuenciaRiego, planta.ultimoRiego)";
+    conexion.execute(consulta);
+  }
+
   static crearPlanta(nombre, tipo, frecuenciaRiego) {
     let planta = new Planta(nombre, tipo, frecuenciaRiego, null);
     console.log(
       `\nSe ha añadido la planta: ${planta.nombre} de tipo: ${planta.tipo}\n`
     );
+    this.insertarPlantaSQL(planta);
   }
 }
