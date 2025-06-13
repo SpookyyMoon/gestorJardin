@@ -27,6 +27,30 @@ $(document).ready(function () {
     cargarPlantas();
   });
 
+  // Acción de regar planta
+  $(document).on("click", "#regarPlantaBoton", function () {
+    let tarjeta = $(this).closest(".plantaTarjeta");
+    let nombre = tarjeta.find(".plantaNombre").text();
+
+    $.post("/regarPlanta", { nombre }, function (response) {
+      if (response.success) {
+        cargarPlantas();
+      }
+    });
+  });
+
+  // Acción de arrancar planta
+  $(document).on("click", "#arrancarPlantaBoton", function () {
+    let tarjeta = $(this).closest(".plantaTarjeta");
+    let nombre = tarjeta.find(".plantaNombre").text();
+
+    $.post("/arrancarPlanta", { nombre }, function (response) {
+      if (response.success) {
+        cargarPlantas();
+      }
+    });
+  });
+
   // Función para cargar y mostrar plantas
   async function cargarPlantas() {
     try {
@@ -60,13 +84,17 @@ $(document).ready(function () {
             planta.ultimoRiego = "No registrado";
             planta.proximoRiego = `Regar en ${planta.frecuenciaRiego} días`;
           }
+          planta.ultimoRiego = planta.ultimoRiego.split("T22")[0];
+          planta.proximoRiego = planta.proximoRiego.split("T22")[0];
           $("#contenido").prepend(`<div class="plantaTarjeta">
                     <div class="plantaBotonera">
+                      <img id="regarPlantaBoton" src="./icons/regadera.png">
+                      <img id="arrancarPlantaBoton" src="./icons/tijeras.png">
                     </div>
                     <div class="plantaContenido">
                       <img class="imgPlanta" src=${imagenPlanta}>
-                      <p class="plantaNombre">${planta.nombre}</p>
-                      <p class="plantaTipo"> ${planta.tipo}</p>
+                      <p class="plantaNombre"><b>${planta.nombre}</b></p>
+                      <p class="plantaTipo"> <u>${planta.tipo}</u></p>
                       <p class="plantaFrecuenciaRiego">Regar cada: ${planta.frecuenciaRiego} días</p>
                       <p class="plantaUltimoRiego">Último riego: ${planta.ultimoRiego}</p>
                       <p class="proximoRiego">Próximo riego: ${planta.proximoRiego}</P>

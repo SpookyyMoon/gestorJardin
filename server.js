@@ -3,7 +3,7 @@ const express = require("express");
 const path = require("path");
 const app = express();
 const mysql = require("mysql2/promise");
-const luxon = require("luxon");
+const { DateTime } = require("luxon");
 
 // Middleware
 app.use(express.static(path.join(__dirname, "public")));
@@ -11,6 +11,12 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
+
+// Datos db
+const host = "";
+const usuario = "";
+const pass = "";
+const db = "";
 
 // Iniciar servidor
 const PORT = 3000;
@@ -41,6 +47,48 @@ app.get("/obtenerPlantas", async (req, res) => {
   res.status(200).json({ success: true, plantas });
 });
 
+// Recibe la acción de regar planta
+app.post("/regarPlanta", async (req, res) => {
+  conexion = await mysql.createConnection({
+    host: host,
+    user: usuario,
+    password: pass,
+    database: db,
+  });
+
+  let { nombre } = req.body;
+  let [plantas] = await conexion.execute(
+    "SELECT * FROM plantas WHERE nombre = ?",
+    [nombre]
+  );
+  let planta = plantas[0];
+  let plantaID = planta.id;
+  let frecuenciaRiego = planta.frecuenciaRiego;
+  await Planta.registrarRiego(plantaID, frecuenciaRiego);
+  res.status(200).json({ success: true });
+});
+
+// Recibe la acción de arrancar planta
+app.post("/arrancarPlanta", async (req, res) => {
+  conexion = await mysql.createConnection({
+    host: host,
+    user: usuario,
+    password: pass,
+    database: db,
+  });
+
+  let { nombre } = req.body;
+  let [plantas] = await conexion.execute(
+    "SELECT * FROM plantas WHERE nombre = ?",
+    [nombre]
+  );
+  let planta = plantas[0];
+  let plantaID = planta.id;
+  await conexion.execute("DELETE FROM plantas WHERE id = ?", [plantaID]);
+
+  res.status(200).json({ success: true });
+});
+
 // Clase planta
 class Planta {
   constructor(nombre, tipo, frecuenciaRiego, ultimoRiego, proximoRiego) {
@@ -56,10 +104,10 @@ class Planta {
     let conexion;
     try {
       conexion = await mysql.createConnection({
-        host: "",
-        user: "",
-        password: "",
-        database: "",
+        host: host,
+        user: usuario,
+        password: pass,
+        database: db,
       });
       const [resultado] = await conexion.execute(
         "INSERT INTO plantas (nombre, tipo, frecuenciaRiego) VALUES (?, ?, ?)",
@@ -76,10 +124,10 @@ class Planta {
     let conexion;
     try {
       conexion = await mysql.createConnection({
-        host: "",
-        user: "",
-        password: "",
-        database: "",
+        host: host,
+        user: usuario,
+        password: pass,
+        database: db,
       });
       const [plantas] = await conexion.execute("SELECT * FROM plantas");
       return plantas;
@@ -104,20 +152,22 @@ class Planta {
   // Registra la última vez que se ha regado una planta
   static async registrarRiego(plantaID, frecuenciaRiego) {
     let conexion;
-    const ahora = luxon.now();
+    const ahora = DateTime.local();
+    const hoy = ahora.toISODate();
+    console.log(hoy);
     try {
       conexion = await mysql.createConnection({
-        host: "",
-        user: "",
-        password: "",
-        database: "",
+        host: host,
+        user: usuario,
+        password: pass,
+        database: db,
       });
       await conexion.execute(
         "UPDATE plantas SET ultimoRiego = ? WHERE id = ?",
-        [ahora, plantaID]
+        [hoy, plantaID]
       );
     } finally {
-      this.proximoRiego(ahora, frecuenciaRiego, plantaID);
+      this.proximoRiego(hoy, frecuenciaRiego, plantaID);
       if (conexion) {
         await conexion.end();
       }
@@ -126,30 +176,25 @@ class Planta {
 
   // Registra el próximo riego necesario
   static async proximoRiego(ultimoRiego, frecuenciaRiego, plantaID) {
+    const ahora = DateTime.local();
+    const proximoRiego = ahora.plus({ days: frecuenciaRiego });
+    const proximoRiegoFormat = proximoRiego.toISODate();
+    console.log(proximoRiegoFormat);
     let conexion;
-    if (!ultimoRiego) {
-      return true;
-    }
-
-    const ultimoRiegoDate = luxon.fromISO(ultimoRiego);
-    const ahora = luxon.now();
-
-    const diasDesdeUltimoRiego = ahora.diff(ultimoRiegoDate, "days").days;
-    const proximoRiego = diasDesdeUltimoRiego >= frecuenciaRiego;
 
     try {
       conexion = await mysql.createConnection({
-        host: "",
-        user: "",
-        password: "",
-        database: "",
+        host: host,
+        user: usuario,
+        password: pass,
+        database: db,
       });
       await conexion.execute(
         "UPDATE plantas SET proximoRiego = ? WHERE id = ?",
-        [proximoRiego, plantaID]
+        [proximoRiegoFormat, plantaID]
       );
     } finally {
-      if (conexion) await conexion.end();
+      if (conexion) await conexion.end(); // Cierra la conexión SQL
     }
   }
 }

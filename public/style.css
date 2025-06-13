@@ -103,7 +103,6 @@ body {
   overflow: auto;
   grid-template-areas:
     "uno dos tres";
-  margin-bottom: 1em;
   padding: 1em;
   grid-template-columns: repeat(3, 1fr);
 }
@@ -196,9 +195,12 @@ body {
   padding: 0em;
 }
 
-
 .imgPlanta {
   height: 10em;
   object-fit: contain;
   margin: 0 auto;
+}
+
+.plantaBotonera img {
+  cursor: pointer;
 }
